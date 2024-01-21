@@ -1,11 +1,11 @@
-import random
 from langchain.chat_models import ChatOpenAI
 
+from app.chat.chains.retrieval import StreamingConversationalRetrievalChain
 from app.chat.llms import llm_map
 from app.chat.memories import memory_map
 from app.chat.models import ChatArgs
+from app.chat.score import random_component_by_score
 from app.chat.vector_stores import retriever_map
-from app.chat.chains.retrieval import StreamingConversationalRetrievalChain
 from app.web.api import (
     set_conversation_components,
     get_conversation_components
@@ -22,7 +22,7 @@ def select_component(component_type, component_map, chat_args):
         builder = component_map[previous_component]
         return previous_component, builder(chat_args)
     else:
-        random_name = random.choice(list(component_map.keys()))
+        random_name = random_component_by_score(component_type, component_map)
         builder = component_map[random_name]
         return random_name, builder(chat_args)
 
@@ -57,5 +57,6 @@ def build_chat(chat_args: ChatArgs):
         llm=llm,
         condense_question_llm=condense_question_llm,
         memory=memory,
-        retriever=retriever
+        retriever=retriever,
+        metadata=chat_args.metadata
     )
